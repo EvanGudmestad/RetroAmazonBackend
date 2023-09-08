@@ -1,0 +1,32 @@
+{
+  "name": "retroamazonbackend",
+  "version": "1.0.0",
+  "description": "We are building a MERN full stack mock amazon.com from the early days",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "start-dev": "nodemon -r dotenv/config server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EvanGudmestad/RetroAmazonBackend.git"
+  },
+  "keywords": [
+    "Fun",
+    "Class",
+    "Project"
+  ],
+  "author": "Evan Gudmestad",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EvanGudmestad/RetroAmazonBackend/issues"
+  },
+  "homepage": "https://github.com/EvanGudmestad/RetroAmazonBackend#readme",
+  "dependencies": {
+    "debug": "^4.3.4",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
