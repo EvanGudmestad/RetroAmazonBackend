@@ -61,7 +61,10 @@ router.put('/:id', (req,res) => {
 
 //add a new book to the array
 router.post('/add', (req,res) => {
-    const newBook = req.body; 
+    //req is the request object
+    const newBook = req.body;
+    debugBook(`Adding new book ${newBook.title} ${newBook.author} ${newBook.publication_date} ${newBook.genre}`);
+    
     
     if(newBook){
         //add a unique id    
