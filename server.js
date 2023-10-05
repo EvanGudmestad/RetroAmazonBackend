@@ -11,6 +11,9 @@ const debugServer = debug('app:Server');
 
 
 const app = express();
+
+app.use(express.static('public'))
+
 //middleware
 //allow form data
 app.use(express.urlencoded({extended: true}));
