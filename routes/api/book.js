@@ -30,12 +30,77 @@ const updateBookSchema = Joi.object({
 
 //get all books
 router.get('/list', async (req, res) => {
-    debugBook('Getting all books');
+
+    //req.body - comes from the HTML form typically the name attribute of the controls
+    //<input type="text" name="txtEmail" />
+    //req.body.txtEmail
+
+
+    //req.params
+    //Variable that's part of the URL
+    //http://localhost:5000/api/book/12345
+    //req.params.id
+
+    //req.query
+    //a query string is part of the URL that starts with a ?
+
+    debugBook(`Getting all books, the query string is ${JSON.stringify(req.query)}`);
+
+    let {keywords, minPrice,maxPrice, genre, sortBy, pageSize, pageNumber} = req.query;
+    const match = {}; //match stage of the aggregation pipeline is the filter similar to the where clause in SQL
+    let sort = {author:1}; //default sort stage will sort by author ascending
+
+    //skip and limit stages together help create pagination
+    //skip will skip the first n documents
+    //limit will limit the number of documents returned
+
+
     try
     {
+        // const db = await connect();
+        // const books = await getBooks();
+        // res.status(200).json(books);
+
+        if(keywords){
+            match.$text = {$search: keywords};
+        }
+
+        if(genre){
+            match.genre = {$eq: genre};
+        }
+
+        if(minPrice && maxPrice){
+            match.price = {$gte: parseFloat(minPrice), $lte: parseFloat(maxPrice)};
+        }else if(minPrice){
+            match.price = {$gte: parseFloat(minPrice)};
+        }else if(maxPrice){
+            match.price = {$lte: parseFloat(maxPrice)};
+        }
+
+        switch(sortBy){
+            case "price": sort = {price : 1}; break;
+            case "year" : sort = {publication_year: 1}; break;
+        }
+
+       // debugBook(`Sort is ${JSON.stringify(sort)}`);
+
+        pageNumber = parseInt(pageNumber) || 1;
+        pageSize = parseInt(pageSize) || 100;
+        const skip = (pageNumber - 1) * pageSize;
+        const limit = pageSize;
+        debugBook(`Skip is ${skip} and limit is ${limit}`);
+        const pipeline = [
+            {$match: match},
+            {$sort: sort},
+            {$skip: skip},
+            {$limit: limit}
+        ];
+
         const db = await connect();
-        const books = await getBooks();
+        const cursor = await db.collection('Book').aggregate(pipeline);
+        const books = await cursor.toArray();
         res.status(200).json(books);
+
     } catch(err){
         res.status(500).json({error: err.stack});
     }
