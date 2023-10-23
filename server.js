@@ -8,11 +8,17 @@ dotenv.config();
 import debug from 'debug';
 const debugServer = debug('app:Server');
 
-
+import cookieParser from 'cookie-parser';
+import {authMiddleware} from '@merlin4/express-auth';
 
 const app = express();
 
 app.use(express.static('public'))
+app.use(cookieParser());
+app.use(authMiddleware(process.env.JWT_SECRET, 'authToken',{
+    httpOnly:true,
+    maxAge:1000*60*60
+}));
 
 //middleware
 //allow form data

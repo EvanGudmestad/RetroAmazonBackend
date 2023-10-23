@@ -5,6 +5,7 @@ import { connect,getBooks, getBookById, updateBook, addBook, deleteBook } from '
 import { validId } from '../../middleware/validId.js';
 import {validBody} from '../../middleware/validBody.js';
 import Joi from 'joi';
+import { isLoggedIn } from '@merlin4/express-auth';
 
 const router = express.Router();
 
@@ -29,8 +30,12 @@ const updateBookSchema = Joi.object({
 });
 
 //get all books
-router.get('/list', async (req, res) => {
+router.get('/list', isLoggedIn(), async (req, res) => {
 
+    // if(!req.auth){
+    //     res.status(401).json({error: 'Not authorized'});
+    //     return;
+    // }
     //req.body - comes from the HTML form typically the name attribute of the controls
     //<input type="text" name="txtEmail" />
     //req.body.txtEmail
@@ -44,8 +49,8 @@ router.get('/list', async (req, res) => {
     //req.query
     //a query string is part of the URL that starts with a ?
 
-    debugBook(`Getting all books, the query string is ${JSON.stringify(req.query)}`);
-
+    //debugBook(`Getting all books, the query string is ${JSON.stringify(req.query)}`);
+    debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
     let {keywords, minPrice,maxPrice, genre, sortBy, pageSize, pageNumber} = req.query;
     const match = {}; //match stage of the aggregation pipeline is the filter similar to the where clause in SQL
     let sort = {author:1}; //default sort stage will sort by author ascending

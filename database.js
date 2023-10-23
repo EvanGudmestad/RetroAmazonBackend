@@ -5,6 +5,8 @@ const debugDatabase = debug("app:Database");
 
 let _db = null;
 
+const newId = (str) => new ObjectId(str);
+
 async function connect(){
     if(!_db){
         const connectionString = process.env.DB_URL;
@@ -70,8 +72,14 @@ async function loginUser(user){
     return resultUser;
 }
 
+async function getAllUsers(){
+    const db = await connect();
+    const users = await db.collection("User").find().toArray();
+    return users;
+}
+
 ping();
 
 
-export {connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser}
+export {connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers}
 
