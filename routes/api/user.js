@@ -2,11 +2,13 @@ import express from 'express';
 import debug from 'debug';
 const debugUser = debug('app:User');
 debugUser.color = '63';
-import {addUser, loginUser, newId,getAllUsers} from '../../database.js';
+import {addUser, loginUser, newId,getAllUsers,getUserById, updateUser, saveEdit} from '../../database.js';
 import bcrypt from 'bcrypt';
 import { validBody } from '../../middleware/validBody.js';
 import Joi from 'joi';
 import jwt from 'jsonwebtoken';
+import { validId } from '../../middleware/validId.js';
+import { isLoggedIn } from '@merlin4/express-auth';
 
 const router = express.Router();
 
@@ -36,7 +38,12 @@ const loginUserSchema = Joi.object({
     password:Joi.string().trim().min(8).max(50).required()
 });
 
-router.get('/list', async (req, res) => {
+const updateUserSchema = Joi.object({
+    fullName:Joi.string().trim().min(1).max(50),
+    password:Joi.string().trim().min(8).max(50),
+});
+
+router.get('/list', isLoggedIn(), async (req, res) => {
     debugUser('Getting all users');
     try{
         let users = await getAllUsers();
@@ -83,5 +90,80 @@ router.post('/login', validBody(loginUserSchema), async (req,res) => {
         res.status(401).json(`email or password incorrect`);
     }
 });
+
+//Self Service Update
+router.put('/update/me', isLoggedIn(),validBody(updateUserSchema), async (req,res) => {
+    debugUser(`Self Service Route Updating a user ${JSON.stringify(req.auth)}`);
+    const updatedUser = req.body;
+   
+    try{
+        const user = await getUserById(newId(req.auth._id));
+        if(user){
+            if(updatedUser.fullName){
+                user.fullName = updatedUser.fullName;
+            }
+            if(updatedUser.password){
+                user.password = await bcrypt.hash(updatedUser.password, 10);
+            }
+            const dbResult = await updateUser(user);
+            if(dbResult.modifiedCount == 1){
+                const edit ={
+                    timeStamp: new Date(),
+                    op:'Self-Edit Update User',
+                    collection:'User',
+                    target:user._id,
+                    auth:req.auth
+                }
+                await saveEdit(edit);
+                res.status(200).json({message: `User ${req.auth._id} updated`});
+                return;
+            }else{
+                res.status(400).json({message: `User ${req.auth._id} not updated`});
+                return;
+            }
+        }else{
+            res.status(400).json({message: `User ${req.auth._id} not updated`});
+        }
+    }catch(err){
+        res.status(500).json({error: err.stack});
+    }
+   
+});
+
+
+//Admin can update a user by the id
+router.put('/update/:id', isLoggedIn(), validId('id'), validBody(updateUserSchema), async (req,res) => {
+    debugUser('Admin Route Updating a user');
+    const updatedUser = req.body;
+    const user = await getUserById(req.id);
+    //update user with updatedUser
+    if(user){
+        if(updatedUser.fullName){
+            user.fullName = updatedUser.fullName;
+        }
+        if(updatedUser.password){
+            user.password = await bcrypt.hash(updatedUser.password, 10);
+        }
+        const dbResult = await updateUser(user);
+        if(dbResult.modifiedCount == 1){
+            const edit ={
+                timeStamp: new Date(),
+                op:'Admin Update User',
+                collection:'User',
+                target:user._id,
+                auth:req.auth
+            }
+            await saveEdit(edit);
+            res.status(200).json({message: `User ${req.id} updated`});
+            return;
+        }else{
+            res.status(400).json({message: `User ${req.id} not updated`});
+            return;
+        }
+    }else{
+        res.status(400).json({message: `User ${req.id} not updated`});
+    }
+});
+
 
 export {router as UserRouter}

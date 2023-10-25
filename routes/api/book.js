@@ -1,7 +1,7 @@
 import express from 'express';
 import debug from 'debug';
 const debugBook = debug('app:Book');
-import { connect,getBooks, getBookById, updateBook, addBook, deleteBook } from '../../database.js';
+import { connect,getBooks, getBookById, updateBook, addBook, deleteBook, saveEdit } from '../../database.js';
 import { validId } from '../../middleware/validId.js';
 import {validBody} from '../../middleware/validBody.js';
 import Joi from 'joi';
@@ -32,6 +32,7 @@ const updateBookSchema = Joi.object({
 //get all books
 router.get('/list', isLoggedIn(), async (req, res) => {
 
+    debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
     // if(!req.auth){
     //     res.status(401).json({error: 'Not authorized'});
     //     return;
@@ -114,7 +115,7 @@ router.get('/list', isLoggedIn(), async (req, res) => {
 });
 
 //get a book by the id
-router.get('/:id', validId('id'), async (req,res) => {
+router.get('/:id', isLoggedIn(), validId('id'), async (req,res) => {
     const id = req.id;
     try{
         const book = await getBookById(id);
@@ -130,7 +131,7 @@ router.get('/:id', validId('id'), async (req,res) => {
 
 //update a book by the id
 //update can use a put or a post
-router.put('/update/:id', validId('id'), validBody(updateBookSchema), async (req,res) => {
+router.put('/update/:id', isLoggedIn(), validId('id'), validBody(updateBookSchema), async (req,res) => {
     const id = req.id;
     const updatedBook = req.body;
     if(updatedBook.price){
@@ -138,7 +139,16 @@ router.put('/update/:id', validId('id'), validBody(updateBookSchema), async (req
     }
    try{
         const updateResult = await updateBook(id, updatedBook);
+        debugBook(`Update result is ${JSON.stringify(updateResult)}`);
         if(updateResult.modifiedCount == 1){
+            const edit ={
+                timeStamp: new Date(),
+                op:'Update Book',
+                collection:'Book',
+                target:id,
+                auth:req.auth
+            }
+            await saveEdit(edit);
             res.status(200).json({message: `Book ${id} updated`});
         }else{
             res.status(400).json({message: `Book ${id} not updated`});
@@ -150,7 +160,7 @@ router.put('/update/:id', validId('id'), validBody(updateBookSchema), async (req
 
 
 //add a new book to the Mongo Atlas database
-router.post('/add', validBody(newBookSchema), async (req,res) => {
+router.post('/add', isLoggedIn(), validBody(newBookSchema), async (req,res) => {
     //req is the request object
     const newBook = req.body;
    
@@ -167,7 +177,7 @@ router.post('/add', validBody(newBookSchema), async (req,res) => {
 });
 
 //delete a book by the id
-router.delete('/delete/:bookId', validId('bookId'), async (req,res) => {
+router.delete('/delete/:bookId', isLoggedIn(), validId('bookId'), async (req,res) => {
     //gets the id from the URL
     const id = req.bookId;
 

@@ -78,8 +78,26 @@ async function getAllUsers(){
     return users;
 }
 
+async function getUserById(id){
+    const db = await connect();
+    const user = await db.collection("User").findOne({_id: id});
+    return user;
+}
+
+async function updateUser(user){
+    const db = await connect();
+    const result = await db.collection("User").updateOne({_id:user._id},{$set:{...user}});
+    return result;
+}
+
+async function saveEdit(edit){
+    const db = await connect();
+    const result = await db.collection("Edit").insertOne(edit);
+    return result;
+}
+
 ping();
 
 
-export {connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers}
+export {connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers, getUserById, updateUser, saveEdit}
 
