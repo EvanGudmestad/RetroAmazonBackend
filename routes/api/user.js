@@ -2,13 +2,13 @@ import express from 'express';
 import debug from 'debug';
 const debugUser = debug('app:User');
 debugUser.color = '63';
-import {addUser, loginUser, newId,getAllUsers,getUserById, updateUser, saveEdit} from '../../database.js';
+import {findRoleByName,addUser, loginUser, newId,getAllUsers,getUserById, updateUser, saveEdit} from '../../database.js';
 import bcrypt from 'bcrypt';
 import { validBody } from '../../middleware/validBody.js';
 import Joi from 'joi';
 import jwt from 'jsonwebtoken';
 import { validId } from '../../middleware/validId.js';
-import { isLoggedIn } from '@merlin4/express-auth';
+import { isLoggedIn, fetchRoles, mergePermissions, hasPermission } from '@merlin4/express-auth';
 
 const router = express.Router();
 
@@ -16,6 +16,18 @@ async function issueAuthToken(user){
     const payload = {_id: user._id, email: user.email, role: user.role};
     const secret = process.env.JWT_SECRET;
     const options = {expiresIn:'1h'};
+
+
+    const roles = await fetchRoles(user, role => findRoleByName(role));
+
+    // roles.forEach(role => {
+    //     debugUser(`The users role is ${(role.name)} and has the following permissions: ${JSON.stringify(role.permissions)}`);
+    // });
+
+    const permissions = mergePermissions(user, roles);
+    payload.permissions = permissions;
+
+    //debugUser(`The users permissions are ${permissions}`);
 
     const authToken = jwt.sign(payload, secret, options);
     return authToken;

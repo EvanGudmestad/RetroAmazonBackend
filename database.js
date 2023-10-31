@@ -96,8 +96,14 @@ async function saveEdit(edit){
     return result;
 }
 
+async function findRoleByName(name){
+    const db = await connect();
+    const role = await db.collection("Role").findOne({name:name});
+    return role;
+}
+
 ping();
 
 
-export {connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers, getUserById, updateUser, saveEdit}
+export {findRoleByName,connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers, getUserById, updateUser, saveEdit}
 
