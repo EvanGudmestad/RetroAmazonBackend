@@ -10,10 +10,17 @@ const debugServer = debug('app:Server');
 
 import cookieParser from 'cookie-parser';
 import {authMiddleware} from '@merlin4/express-auth';
+import cors from 'cors';
+
 
 const app = express();
 
 app.use(express.static('public'))
+app.use(express.json()); //accepts json data in the body of the request from the client
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(cookieParser());
 app.use(authMiddleware(process.env.JWT_SECRET, 'authToken',{
     httpOnly:true,

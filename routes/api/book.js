@@ -30,27 +30,10 @@ const updateBookSchema = Joi.object({
 });
 
 //get all books
-router.get('/list', isLoggedIn(),  hasPermission('canListBooks'), async (req, res) => {
+router.get('/list', isLoggedIn(), async (req, res) => {
 
     debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
-    // if(!req.auth){
-    //     res.status(401).json({error: 'Not authorized'});
-    //     return;
-    // }
-    //req.body - comes from the HTML form typically the name attribute of the controls
-    //<input type="text" name="txtEmail" />
-    //req.body.txtEmail
-
-
-    //req.params
-    //Variable that's part of the URL
-    //http://localhost:5000/api/book/12345
-    //req.params.id
-
-    //req.query
-    //a query string is part of the URL that starts with a ?
-
-    //debugBook(`Getting all books, the query string is ${JSON.stringify(req.query)}`);
+ 
     debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
     let {keywords, minPrice,maxPrice, genre, sortBy, pageSize, pageNumber} = req.query;
     const match = {}; //match stage of the aggregation pipeline is the filter similar to the where clause in SQL
