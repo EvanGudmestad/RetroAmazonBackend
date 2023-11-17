@@ -30,7 +30,7 @@ const updateBookSchema = Joi.object({
 });
 
 //get all books
-router.get('/list', isLoggedIn(), async (req, res) => {
+router.get('/list', isLoggedIn(), hasPermission('canListBooks'), async (req, res) => {
 
     debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
  
@@ -160,7 +160,7 @@ router.post('/add', isLoggedIn(), validBody(newBookSchema), async (req,res) => {
 });
 
 //delete a book by the id
-router.delete('/delete/:bookId', isLoggedIn(), validId('bookId'), async (req,res) => {
+router.delete('/delete/:bookId', isLoggedIn(), hasPermission('canDeleteBook'), validId('bookId'), async (req,res) => {
     //gets the id from the URL
     const id = req.bookId;
 
