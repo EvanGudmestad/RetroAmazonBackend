@@ -114,7 +114,7 @@ router.get('/:id', isLoggedIn(), validId('id'), async (req,res) => {
 
 //update a book by the id
 //update can use a put or a post
-router.put('/update/:id', isLoggedIn(), validId('id'), validBody(updateBookSchema), async (req,res) => {
+router.put('/update/:id', isLoggedIn(), validId('id'), hasPermission('canUpdateBook'), validBody(updateBookSchema), async (req,res) => {
     const id = req.id;
     const updatedBook = req.body;
     if(updatedBook.price){

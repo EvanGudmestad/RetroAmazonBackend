@@ -102,6 +102,7 @@ router.post('/login', validBody(loginUserSchema), async (req,res) => {
             authToken:authToken,
             email:resultUser.email,
             fullName:resultUser.fullName,
+            role:resultUser.role,
         } );
     }else{
         res.status(401).json(`email or password incorrect`);
