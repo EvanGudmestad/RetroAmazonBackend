@@ -82,7 +82,11 @@ router.post('/add', validBody(newUserSchema), async (req,res) => {
             const authToken = await issueAuthToken(newUser);
             issueAuthCookie(res, authToken);
 
-            res.status(200).json({message: `User ${result.insertedId} added.  Your auth token is ${authToken}`});
+            res.status(200).json({
+                message: `New user ${newUser.fullName} added`,
+                fullName: newUser.fullName,
+                role: newUser.role,
+            });
        }
     }catch(err){
         res.status(500).json({error: err.stack});
