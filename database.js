@@ -102,7 +102,7 @@ async function findRoleByName(name){
     return role;
 }
 
-ping();
+//ping();
 
 
 export {findRoleByName,connect, ping, getBooks, getBookById, addBook, updateBook, deleteBook, addUser, loginUser, newId,getAllUsers, getUserById, updateUser, saveEdit}
