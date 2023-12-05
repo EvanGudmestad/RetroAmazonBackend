@@ -32,9 +32,9 @@ const updateBookSchema = Joi.object({
 //get all books
 router.get('/list', isLoggedIn(), hasPermission('canListBooks'), async (req, res) => {
 
-    debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
+   // debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
  
-    debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
+    //debugBook(`The req.auth property is: ${JSON.stringify(req.auth)}`);
     let {keywords, minPrice,maxPrice, genre, sortBy, pageSize, pageNumber} = req.query;
     const match = {}; //match stage of the aggregation pipeline is the filter similar to the where clause in SQL
     let sort = {author:1}; //default sort stage will sort by author ascending
@@ -77,18 +77,20 @@ router.get('/list', isLoggedIn(), hasPermission('canListBooks'), async (req, res
         pageSize = parseInt(pageSize) || 100;
         const skip = (pageNumber - 1) * pageSize;
         const limit = pageSize;
-        debugBook(`Skip is ${skip} and limit is ${limit}`);
+       // debugBook(`Skip is ${skip} and limit is ${limit}`);
         const pipeline = [
             {$match: match},
             {$sort: sort},
             {$skip: skip},
             {$limit: limit}
         ];
+        debugBook(`The pipeline is ${JSON.stringify(pipeline)}`);
 
         const db = await connect();
         const cursor = await db.collection('Book').aggregate(pipeline);
         const books = await cursor.toArray();
-        res.status(200).json(books);
+        const totalCount = await db.collection('Book').countDocuments(match);
+        res.status(200).json({books,totalCount});
 
     } catch(err){
         res.status(500).json({error: err.stack});
