@@ -29,8 +29,21 @@ async function getBooks(){
     //MongoSH command to find all books: db.books.find({})
     //find() returns a cursor, which is a pointer to the result set of a query.
     const books = await db.collection("Book").find().toArray();
+    
+    const bufferToBase64 = (buffer) => {
+            return buffer.toString('base64');
+        };
+    // Iterate over each book and convert imageFile.data to Base64
+    const booksWithImages = books.map(book => {
+        if (book.imageFile && book.imageFile.data) {
+            book.imageFile.base64 = bufferToBase64(book.imageFile.data);
+            // Optionally delete the binary data if you don't need it on the frontend
+            // delete book.imageFile.data;
+        }
+        return book;
+    });
     //console.log(books);
-    return books;
+    return booksWithImages;
 }
 
 async function getBookById(id){
@@ -101,6 +114,12 @@ async function findRoleByName(name){
     const role = await db.collection("Role").findOne({name:name});
     return role;
 }
+
+// async function insertBookImage(image){
+//     const db = await connect();
+//     const result = await db.collection("BookImage").insertOne(image);
+//     return result;
+// }
 
 //ping();
 

@@ -6,6 +6,7 @@ import { validId } from '../../middleware/validId.js';
 import {validBody} from '../../middleware/validBody.js';
 import Joi from 'joi';
 import { isLoggedIn, hasPermission } from '@merlin4/express-auth';
+import mongodb from 'mongodb';
 
 const router = express.Router();
 
@@ -150,12 +151,24 @@ router.put('/update/:id', isLoggedIn(), validId('id'), hasPermission('canUpdateB
 router.post('/add', isLoggedIn(),  async (req,res) => {
     //req is the request object
     const newBook = req.body;
+    
     const file = req.file;
-    debugBook(`File is ${JSON.stringify(file)}`);
+
+    const fileBinary = new mongodb.Binary(file.buffer);
+
+   // debugBook(`File is ${JSON.stringify(file)}`);
     if(file){
-        newBook.imagePath = file.path;
-        //remove the public from the path - public\uploads\download.jpg
-        newBook.imagePath = newBook.imagePath.replace('public\\','');
+            // Create a document for the file
+            const fileDocument = {
+                filename: file.originalname,
+                contentType: file.mimetype,
+                data: fileBinary,
+            };
+
+     newBook.imageFile = fileDocument;       
+            // Save the file to the database
+           //const dbResult = await insertBookImage(fileDocument);
+           // debugBook(`dbResult is ${JSON.stringify(dbResult)}`);
     }
    
     try{

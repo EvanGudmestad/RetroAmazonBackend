@@ -13,15 +13,18 @@ import {authMiddleware} from '@merlin4/express-auth';
 import cors from 'cors';
 import multer from 'multer';
 
-const storage = multer.diskStorage({
-    destination: 'public/uploads/',
-    filename: function(req, file, cb){
-        cb(null, file.originalname);
-    }
-});
+// const storage = multer.diskStorage({
+//     destination: 'public/uploads/',
+//     filename: function(req, file, cb){
+//         cb(null, file.originalname);
+//     }
+// });
 
 
-const upload = multer({storage});
+
+
+// const upload = multer({storage});
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 const app = express();
@@ -39,7 +42,7 @@ app.use(authMiddleware(process.env.JWT_SECRET, 'authToken',{
 }));
 
 // Apply multer middleware globally
-app.use(upload.single('bookPic')); // 'any' means accept files on any route
+app.use(upload.single('bookPic'));
 
 //middleware
 //allow form data
