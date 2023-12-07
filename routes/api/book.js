@@ -9,6 +9,8 @@ import { isLoggedIn, hasPermission } from '@merlin4/express-auth';
 
 const router = express.Router();
 
+
+
 const newBookSchema = Joi.object({
     isbn:Joi.string().trim().min(14).required(),
     title:Joi.string().trim().min(1).required(),
@@ -145,9 +147,16 @@ router.put('/update/:id', isLoggedIn(), validId('id'), hasPermission('canUpdateB
 
 
 //add a new book to the Mongo Atlas database
-router.post('/add', isLoggedIn(), validBody(newBookSchema), async (req,res) => {
+router.post('/add', isLoggedIn(),  async (req,res) => {
     //req is the request object
     const newBook = req.body;
+    const file = req.file;
+    debugBook(`File is ${JSON.stringify(file)}`);
+    if(file){
+        newBook.imagePath = file.path;
+        //remove the public from the path - public\uploads\download.jpg
+        newBook.imagePath = newBook.imagePath.replace('public\\','');
+    }
    
     try{
         const dbResult = await addBook(newBook);
